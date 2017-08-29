@@ -1,9 +1,9 @@
 from main import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QColor, QPen
-from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
-edge = 5
+EDGE = 5
 HEIGHT = 600
 
 class View(QWidget):
@@ -22,9 +22,12 @@ class View(QWidget):
         updater.start(50)
         updater.timeout.connect(self.update)
 
+        self.img = QPixmap(EDGE*len(self.field), HEIGHT)
+        self.img.fill(QColor(255, 255, 255))
+
         #Window size
-        self.setMinimumSize(QSize(edge*len(self.field), HEIGHT))
-        self.setMaximumSize(QSize(edge*len(self.field), HEIGHT))
+        self.setMinimumSize(QSize(EDGE*len(self.field), HEIGHT))
+        self.setMaximumSize(QSize(EDGE*len(self.field), HEIGHT))
         self.setWindowTitle('Patterns')
         self.show()
 
@@ -33,22 +36,29 @@ class View(QWidget):
 
         #Draw board 
         qp = QPainter()
-        qp.begin(self)
+        qp.begin(self.img)
         for i, field in enumerate(self.fields):
             for j, ch in enumerate(field):
                 if ch == "1":
                     qp.setBrush(QColor(0, 0, 0))
                 else:
                     qp.setBrush(QColor(255, 255, 255))
-                qp.drawRect(j*edge, i*edge, edge, edge)
-        
+                qp.drawRect(j*EDGE, i*EDGE, EDGE, EDGE)
+        qp.end()
+
+        qp.begin(self)
+        qp.drawPixmap(QPoint(0,0), self.img)
+        qp.end()
+
+        del qp
+
         self.field = generate(self.field)
         self.fields += [self.field]
 
-        if len(self.fields)*edge >= HEIGHT:
+        if len(self.fields)*EDGE >= HEIGHT:
             self.fields = self.fields[1:]
         
-        qp.end()
+        
 
 app = QApplication([])
 view = View()
